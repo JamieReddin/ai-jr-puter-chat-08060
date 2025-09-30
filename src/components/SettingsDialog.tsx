@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-
 interface Model {
   value: string;
   label: string;
@@ -19,13 +18,11 @@ interface Model {
   provider?: string;
   category?: string;
 }
-
 interface ModelsData {
   [provider: string]: {
     [category: string]: Model[];
   };
 }
-
 interface SettingsDialogProps {
   modelsData: ModelsData;
   allModels: Model[];
@@ -33,7 +30,6 @@ interface SettingsDialogProps {
   onEnabledModelsChange: (enabledModels: string[]) => void;
   allModelValues: string[];
 }
-
 const getProviderColor = (provider: string) => {
   const colors = {
     'OpenAI': 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -45,8 +41,13 @@ const getProviderColor = (provider: string) => {
   };
   return colors[provider as keyof typeof colors] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
 };
-
-export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabledModelsChange, allModelValues }: SettingsDialogProps) {
+export function SettingsDialog({
+  modelsData,
+  allModels,
+  enabledModels,
+  onEnabledModelsChange,
+  allModelValues
+}: SettingsDialogProps) {
   const [openProviders, setOpenProviders] = useState<Set<string>>(new Set(['OpenAI']));
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
@@ -57,7 +58,6 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
   const [maxPuterTokens, setMaxPuterTokens] = useState(() => {
     return parseInt(localStorage.getItem('maxPuterTokens') || '50000000');
   });
-
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -67,16 +67,13 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
-
   useEffect(() => {
     document.documentElement.style.fontSize = `${textSize}%`;
     localStorage.setItem('textSize', textSize.toString());
   }, [textSize]);
-
   const handleSaveAppSettings = () => {
     localStorage.setItem('maxPuterTokens', maxPuterTokens.toString());
   };
-
   const toggleProvider = (provider: string) => {
     const newOpenProviders = new Set(openProviders);
     if (newOpenProviders.has(provider)) {
@@ -86,7 +83,6 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
     }
     setOpenProviders(newOpenProviders);
   };
-
   const handleModelToggle = (modelValue: string, checked: boolean) => {
     if (checked) {
       onEnabledModelsChange([...enabledModels, modelValue]);
@@ -94,34 +90,27 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
       onEnabledModelsChange(enabledModels.filter(m => m !== modelValue));
     }
   };
-
   const selectAllForProvider = (provider: string) => {
-    const providerModels = Object.values(modelsData[provider] || {})
-      .flat()
-      .map(m => m.value);
+    const providerModels = Object.values(modelsData[provider] || {}).flat().map(m => m.value);
     const newEnabled = [...new Set([...enabledModels, ...providerModels])];
     onEnabledModelsChange(newEnabled);
   };
-
   const deselectAllForProvider = (provider: string) => {
-    const providerModels = Object.values(modelsData[provider] || {})
-      .flat()
-      .map(m => m.value);
+    const providerModels = Object.values(modelsData[provider] || {}).flat().map(m => m.value);
     const newEnabled = enabledModels.filter(m => !providerModels.includes(m));
     onEnabledModelsChange(newEnabled);
   };
-
   const selectAllModels = () => {
     onEnabledModelsChange(allModelValues);
   };
-
   const deselectAllModels = () => {
     onEnabledModelsChange([]);
   };
-
   const exportChat = () => {
     const messages = localStorage.getItem('chatHistory') || '[]';
-    const blob = new Blob([messages], { type: 'application/json' });
+    const blob = new Blob([messages], {
+      type: 'application/json'
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -129,14 +118,11 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
     a.click();
     URL.revokeObjectURL(url);
   };
-
   const clearChatHistory = () => {
     localStorage.removeItem('chatHistory');
     alert('Chat history cleared!');
   };
-
-  return (
-    <Dialog>
+  return <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
           <Settings className="h-4 w-4" />
@@ -162,7 +148,7 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
           <TabsContent value="models" className="px-6 pb-6 mt-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-center font-normal text-xs">
                   Choose which AI models appear in your model selector dropdown. {enabledModels.length} models selected.
                 </p>
                 <div className="flex gap-2">
@@ -177,12 +163,7 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
 
               <ScrollArea className="h-[50vh]">
                 <div className="space-y-4">
-                  {Object.entries(modelsData).map(([provider, categories]) => (
-                    <Collapsible
-                      key={provider}
-                      open={openProviders.has(provider)}
-                      onOpenChange={() => toggleProvider(provider)}
-                    >
+                  {Object.entries(modelsData).map(([provider, categories]) => <Collapsible key={provider} open={openProviders.has(provider)} onOpenChange={() => toggleProvider(provider)}>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between p-3 h-auto font-semibold border border-border">
                           <div className="flex items-center gap-3">
@@ -194,26 +175,16 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-6 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                selectAllForProvider(provider);
-                              }}
-                            >
+                            <Button variant="outline" size="sm" className="h-6 text-xs" onClick={e => {
+                          e.stopPropagation();
+                          selectAllForProvider(provider);
+                        }}>
                               All
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-6 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deselectAllForProvider(provider);
-                              }}
-                            >
+                            <Button variant="outline" size="sm" className="h-6 text-xs" onClick={e => {
+                          e.stopPropagation();
+                          deselectAllForProvider(provider);
+                        }}>
                               None
                             </Button>
                             <div className={`transform transition-transform ${openProviders.has(provider) ? 'rotate-90' : ''}`}>
@@ -223,39 +194,24 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
                         </Button>
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-3 mt-2 ml-4">
-                        {Object.entries(categories).map(([category, models]: [string, Model[]]) => (
-                          <div key={category} className="space-y-2">
+                        {Object.entries(categories).map(([category, models]: [string, Model[]]) => <div key={category} className="space-y-2">
                             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                               {category}
                             </h4>
                             <div className="grid gap-2">
-                              {models.map((model: Model) => (
-                                <div
-                                  key={model.value}
-                                  className="flex items-center space-x-3 p-2 rounded-md border border-border hover:bg-accent/50"
-                                >
-                                  <Checkbox
-                                    id={model.value}
-                                    checked={enabledModels.includes(model.value)}
-                                    onCheckedChange={(checked) => handleModelToggle(model.value, checked as boolean)}
-                                  />
+                              {models.map((model: Model) => <div key={model.value} className="flex items-center space-x-3 p-2 rounded-md border border-border hover:bg-accent/50">
+                                  <Checkbox id={model.value} checked={enabledModels.includes(model.value)} onCheckedChange={checked => handleModelToggle(model.value, checked as boolean)} />
                                   <div className="flex-1">
-                                    <label
-                                      htmlFor={model.value}
-                                      className="font-medium text-sm cursor-pointer"
-                                    >
+                                    <label htmlFor={model.value} className="font-medium text-sm cursor-pointer">
                                       {model.label}
                                     </label>
                                     <div className="text-xs text-muted-foreground">{model.description}</div>
                                   </div>
-                                </div>
-                              ))}
+                                </div>)}
                             </div>
-                          </div>
-                        ))}
+                          </div>)}
                       </CollapsibleContent>
-                    </Collapsible>
-                  ))}
+                    </Collapsible>)}
                 </div>
               </ScrollArea>
             </div>
@@ -266,34 +222,17 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="dark-mode">Dark Mode</Label>
-                  <Switch
-                    id="dark-mode"
-                    checked={isDarkMode}
-                    onCheckedChange={setIsDarkMode}
-                  />
+                  <Switch id="dark-mode" checked={isDarkMode} onCheckedChange={setIsDarkMode} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="text-size">Text Size: {textSize}%</Label>
-                  <Slider
-                    id="text-size"
-                    min={75}
-                    max={150}
-                    step={5}
-                    value={[textSize]}
-                    onValueChange={(value) => setTextSize(value[0])}
-                  />
+                  <Slider id="text-size" min={75} max={150} step={5} value={[textSize]} onValueChange={value => setTextSize(value[0])} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="max-tokens">Max Puter Tokens</Label>
-                  <Input
-                    id="max-tokens"
-                    type="number"
-                    value={maxPuterTokens}
-                    onChange={(e) => setMaxPuterTokens(parseInt(e.target.value) || 0)}
-                    min={0}
-                  />
+                  <Input id="max-tokens" type="number" value={maxPuterTokens} onChange={e => setMaxPuterTokens(parseInt(e.target.value) || 0)} min={0} />
                 </div>
 
                 <div className="space-y-2">
@@ -319,24 +258,14 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
             <div className="space-y-4 text-center">
               <div>
                 <p className="text-sm text-muted-foreground mb-2">Created by</p>
-                <a 
-                  href="https://jayreddin.github.io" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline font-medium"
-                >
+                <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                   Jamie Reddin
                 </a>
               </div>
               
               <div>
                 <p className="text-sm text-muted-foreground mb-2">Powered by</p>
-                <a 
-                  href="https://puter.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline font-medium"
-                >
+                <a href="https://puter.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                   Puter.com
                 </a>
               </div>
@@ -348,6 +277,5 @@ export function SettingsDialog({ modelsData, allModels, enabledModels, onEnabled
           </TabsContent>
         </Tabs>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }
