@@ -63,7 +63,7 @@ export function TokenUsageBar({
         <span className="whitespace-nowrap">Puter:</span>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs hover:bg-accent flex-1 sm:flex-initial">
+            <Button variant="ghost" size="sm" className="h-4 px-2 text-xs hover:bg-accent flex-1 sm:flex-initial text-justify">
               <div className="flex items-center gap-1 sm:gap-2 overflow-hidden">
                 <Progress value={puterUsagePercentage} className="w-16 sm:w-24 h-2 flex-shrink-0" />
                 <span className="truncate text-xs">{formatNumber(puterTokensRemaining)} left</span>
