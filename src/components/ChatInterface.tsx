@@ -574,9 +574,7 @@ export default function ChatInterface() {
                 {messages.length} messages
               </Badge>
             </div>
-            <a href="https://developer.puter.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-xs">
-              Powered by Puter
-            </a>
+            
           </div>
         </div>
       </div>
