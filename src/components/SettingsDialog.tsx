@@ -356,13 +356,13 @@ export function SettingsDialog({
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">App Details</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex justify-between">
+                    <div className="flex-auto ">
                       <span className="text-muted-foreground">Created by:</span>
                       <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         Jamie Reddin
                       </a>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex-auto ">
                       <span className="text-muted-foreground">Powered by:</span>
                       <a href="https://puter.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         Puter.com
