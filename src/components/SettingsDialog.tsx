@@ -147,18 +147,16 @@ export function SettingsDialog({
 
           <TabsContent value="models" className="px-6 pb-6 mt-4">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground text-center font-normal text-xs">
-                  Choose which AI models appear in your model selector dropdown. {enabledModels.length} models selected.
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={selectAllModels}>
-                    Select All
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={deselectAllModels}>
-                    Deselect All
-                  </Button>
-                </div>
+              <p className="text-muted-foreground text-center font-normal text-xs mb-4">
+                Choose which AI models appear in your model selector dropdown. {enabledModels.length} models selected.
+              </p>
+              <div className="flex justify-center gap-2 mb-4">
+                <Button variant="outline" size="sm" onClick={selectAllModels}>
+                  Select All
+                </Button>
+                <Button variant="outline" size="sm" onClick={deselectAllModels}>
+                  Deselect All
+                </Button>
               </div>
 
               <ScrollArea className="h-[50vh]">
