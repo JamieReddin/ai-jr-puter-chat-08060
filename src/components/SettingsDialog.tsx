@@ -253,7 +253,7 @@ export function SettingsDialog({
           </TabsContent>
 
           <TabsContent value="about" className="px-6 pb-6 mt-4">
-            <div className="space-y-4 text-center">
+            <div className="space-y-4 text-center ">
               <div>
                 <p className="text-sm text-muted-foreground mb-2">Created by</p>
                 <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
