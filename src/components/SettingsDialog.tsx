@@ -86,19 +86,15 @@ export function SettingsDialog({
     document.documentElement.style.fontSize = `${textSize}%`;
     localStorage.setItem('textSize', textSize.toString());
   }, [textSize]);
-
   useEffect(() => {
     localStorage.setItem('userName', userName);
   }, [userName]);
-
   useEffect(() => {
     localStorage.setItem('userAvatar', userAvatar);
   }, [userAvatar]);
-
   const handleSaveAppSettings = () => {
     localStorage.setItem('maxPuterTokens', maxPuterTokens.toString());
   };
-
   const handleAddModel = () => {
     if (newModelId.trim() && newModelProvider.trim()) {
       const newModel: Model = {
@@ -108,20 +104,17 @@ export function SettingsDialog({
         category: 'Custom',
         description: 'Custom user-added model'
       };
-      
       const updatedCustomModels = [...customModels, newModel];
       setCustomModels(updatedCustomModels);
       localStorage.setItem('customModels', JSON.stringify(updatedCustomModels));
-      
+
       // Add to enabled models
       onEnabledModelsChange([...enabledModels, newModel.value]);
-      
       setNewModelId('');
       setNewModelProvider('');
       setShowAddModel(false);
     }
   };
-
   const getAllModelsWithCustom = () => {
     const baseModels = ALL_MODEL_VALUES.map(value => ({
       value,
@@ -129,18 +122,14 @@ export function SettingsDialog({
       provider: value.includes('/') ? value.split('/')[0] : 'Unknown',
       category: 'Standard'
     }));
-    
     return [...baseModels, ...customModels];
   };
-
   const getModelsDataWithCustom = () => {
     const allModelsWithCustom = getAllModelsWithCustom();
     const grouped: ModelsData = {};
-    
     allModelsWithCustom.forEach(model => {
       const provider = model.provider || 'Unknown';
       const category = model.category || 'Standard';
-      
       if (!grouped[provider]) {
         grouped[provider] = {};
       }
@@ -149,7 +138,6 @@ export function SettingsDialog({
       }
       grouped[provider][category].push(model);
     });
-    
     return grouped;
   };
   const toggleProvider = (provider: string) => {
@@ -174,19 +162,16 @@ export function SettingsDialog({
     const newEnabled = [...new Set([...enabledModels, ...providerModels])];
     onEnabledModelsChange(newEnabled);
   };
-  
   const deselectAllForProvider = (provider: string) => {
     const modelsDataWithCustom = getModelsDataWithCustom();
     const providerModels = Object.values(modelsDataWithCustom[provider] || {}).flat().map(m => m.value);
     const newEnabled = enabledModels.filter(m => !providerModels.includes(m));
     onEnabledModelsChange(newEnabled);
   };
-  
   const selectAllModels = () => {
     const allModelsWithCustom = getAllModelsWithCustom();
     onEnabledModelsChange(allModelsWithCustom.map(m => m.value));
   };
-  
   const deselectAllModels = () => {
     onEnabledModelsChange([]);
   };
@@ -234,14 +219,14 @@ export function SettingsDialog({
               <p className="text-muted-foreground text-center font-normal text-xs mb-4">
                 Choose which AI models appear in your model selector dropdown. {enabledModels.length} models selected.
               </p>
-              <div className="flex justify-center gap-2 mb-4">
+              <div className="flex justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllModels}>
                   Select All
                 </Button>
                 <Button variant="outline" size="sm" onClick={deselectAllModels}>
                   Deselect All
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowAddModel(true)}>
+                <Button variant="outline" size="sm" onClick={() => setShowAddModel(true)} className="text-center justify-center ">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Model
                 </Button>
@@ -357,21 +342,11 @@ export function SettingsDialog({
                     <div className="flex-1 space-y-2">
                       <div>
                         <Label htmlFor="user-name">Name</Label>
-                        <Input
-                          id="user-name"
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
-                          placeholder="Enter your name"
-                        />
+                        <Input id="user-name" value={userName} onChange={e => setUserName(e.target.value)} placeholder="Enter your name" />
                       </div>
                       <div>
                         <Label htmlFor="user-avatar">Avatar URL</Label>
-                        <Input
-                          id="user-avatar"
-                          value={userAvatar}
-                          onChange={(e) => setUserAvatar(e.target.value)}
-                          placeholder="Enter avatar image URL"
-                        />
+                        <Input id="user-avatar" value={userAvatar} onChange={e => setUserAvatar(e.target.value)} placeholder="Enter avatar image URL" />
                       </div>
                     </div>
                   </div>
@@ -439,21 +414,11 @@ export function SettingsDialog({
           <div className="space-y-4">
             <div>
               <Label htmlFor="model-id">Model ID</Label>
-              <Input
-                id="model-id"
-                value={newModelId}
-                onChange={(e) => setNewModelId(e.target.value)}
-                placeholder="e.g., gpt-4-custom"
-              />
+              <Input id="model-id" value={newModelId} onChange={e => setNewModelId(e.target.value)} placeholder="e.g., gpt-4-custom" />
             </div>
             <div>
               <Label htmlFor="model-provider">Provider</Label>
-              <Input
-                id="model-provider"
-                value={newModelProvider}
-                onChange={(e) => setNewModelProvider(e.target.value)}
-                placeholder="e.g., OpenAI"
-              />
+              <Input id="model-provider" value={newModelProvider} onChange={e => setNewModelProvider(e.target.value)} placeholder="e.g., OpenAI" />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowAddModel(false)}>
