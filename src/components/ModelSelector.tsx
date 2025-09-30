@@ -25,6 +25,7 @@ interface ModelSelectorProps {
   modelsData: ModelsData;
   allModels: Model[];
   popularModels: Model[];
+  enabledModels: string[];
 }
 const getModelIcon = (category: string, provider: string) => {
   if (category.includes('Reasoning') || provider === 'xAI') return Brain;
@@ -49,7 +50,8 @@ export function ModelSelector({
   onModelSelect,
   modelsData,
   allModels,
-  popularModels
+  popularModels,
+  enabledModels
 }: ModelSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [openProviders, setOpenProviders] = useState<Set<string>>(new Set(['OpenAI', 'Anthropic']));
@@ -64,7 +66,14 @@ export function ModelSelector({
     }
     setOpenProviders(newOpenProviders);
   };
-  const filteredModels = allModels.filter(model => model.label.toLowerCase().includes(searchTerm.toLowerCase()) || model.provider.toLowerCase().includes(searchTerm.toLowerCase()) || model.description?.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Filter to only show enabled models
+  const filteredModels = allModels.filter(model => 
+    enabledModels.includes(model.value) && 
+    (model.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     model.provider.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     model.description?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
   const selectedModelInfo = allModels.find(m => m.value === selectedModel) || popularModels[0];
   const handleModelSelect = (model: string) => {
     onModelSelect(model);

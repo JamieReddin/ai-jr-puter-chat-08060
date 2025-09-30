@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, User, Lightbulb } from 'lucide-react';
+import { Settings, Plus, User, Lightbulb, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,6 +73,7 @@ export function SettingsDialog({
   const [userAvatar, setUserAvatar] = useState(() => {
     return localStorage.getItem('userAvatar') || '';
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -127,16 +128,28 @@ export function SettingsDialog({
   const getModelsDataWithCustom = () => {
     const allModelsWithCustom = getAllModelsWithCustom();
     const grouped: ModelsData = {};
-    allModelsWithCustom.forEach(model => {
+    
+    // Sort custom models to appear at top
+    const sortedModels = allModelsWithCustom.sort((a, b) => {
+      if (a.category === 'Custom' && b.category !== 'Custom') return -1;
+      if (a.category !== 'Custom' && b.category === 'Custom') return 1;
+      return 0;
+    });
+    
+    sortedModels.forEach(model => {
       const provider = model.provider || 'Unknown';
       const category = model.category || 'Standard';
-      if (!grouped[provider]) {
-        grouped[provider] = {};
+      
+      // Group openrouter models together
+      const finalProvider = model.value.startsWith('openrouter:') ? 'OpenRouter' : provider;
+      
+      if (!grouped[finalProvider]) {
+        grouped[finalProvider] = {};
       }
-      if (!grouped[provider][category]) {
-        grouped[provider][category] = [];
+      if (!grouped[finalProvider][category]) {
+        grouped[finalProvider][category] = [];
       }
-      grouped[provider][category].push(model);
+      grouped[finalProvider][category].push(model);
     });
     return grouped;
   };
@@ -175,6 +188,46 @@ export function SettingsDialog({
   const deselectAllModels = () => {
     onEnabledModelsChange([]);
   };
+  const refreshModels = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch('https://api.puter.com/puterai/chat/models/');
+      const data = await response.json();
+      
+      if (data && Array.isArray(data)) {
+        const currentModels = getAllModelsWithCustom().map(m => m.value);
+        const newModels = data.filter((model: string) => !currentModels.includes(model));
+        
+        if (newModels.length > 0) {
+          const confirmed = confirm(`Found ${newModels.length} new models. Add them to your list?`);
+          if (confirmed) {
+            const newCustomModels = newModels.map((modelValue: string) => ({
+              value: modelValue,
+              label: modelValue,
+              provider: modelValue.includes('/') ? modelValue.split('/')[0] : 'Unknown',
+              category: 'API',
+              description: 'Newly discovered model'
+            }));
+            
+            const updatedCustomModels = [...customModels, ...newCustomModels];
+            setCustomModels(updatedCustomModels);
+            localStorage.setItem('customModels', JSON.stringify(updatedCustomModels));
+            
+            // Add to enabled models
+            onEnabledModelsChange([...enabledModels, ...newModels]);
+          }
+        } else {
+          alert('No new models found.');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching models:', error);
+      alert('Failed to refresh models. Please try again.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const exportChat = () => {
     const messages = localStorage.getItem('chatHistory') || '[]';
     const blob = new Blob([messages], {
@@ -219,16 +272,20 @@ export function SettingsDialog({
               <p className="text-muted-foreground text-center font-normal text-xs mb-4">
                 Choose which AI models appear in your model selector dropdown. {enabledModels.length} models selected.
               </p>
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={selectAllModels}>
                   Select All
                 </Button>
                 <Button variant="outline" size="sm" onClick={deselectAllModels}>
                   Deselect All
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowAddModel(true)} className="text-center justify-center ">
+                <Button variant="outline" size="sm" onClick={() => setShowAddModel(true)} className="text-center justify-center">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Model
+                </Button>
+                <Button variant="outline" size="sm" onClick={refreshModels} disabled={isRefreshing} className="text-center justify-center">
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh
                 </Button>
               </div>
 

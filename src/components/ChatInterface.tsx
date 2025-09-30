@@ -9,6 +9,7 @@ import { TypingIndicator } from './TypingIndicator';
 import { ModelSelector } from './ModelSelector';
 import { SettingsDialog } from './SettingsDialog';
 import { TokenUsageBar } from './TokenUsageBar';
+import { VoiceMicrophone } from './VoiceMicrophone';
 import { ALL_MODEL_VALUES } from '@/data/models';
 import { useToast } from '@/hooks/use-toast';
 
@@ -430,6 +431,11 @@ export default function ChatInterface() {
       handleSendMessage();
     }
   };
+
+  const handleVoiceTranscript = (transcript: string) => {
+    setInputValue(transcript);
+    inputRef.current?.focus();
+  };
   return <div className="flex flex-col h-screen bg-background">
       {/* Header */}
       <div className="flex-none border-b border-border bg-card/50 backdrop-blur-sm">
@@ -466,7 +472,7 @@ export default function ChatInterface() {
 
           {/* Second row: Model selector */}
           <div className="flex items-center justify-center w-full sm:max-w-md sm:mx-auto">
-            <ModelSelector selectedModel={selectedModel} onModelSelect={setSelectedModel} modelsData={filteredModelsData} allModels={filteredAllModels} popularModels={filteredPopularModels} />
+            <ModelSelector selectedModel={selectedModel} onModelSelect={setSelectedModel} modelsData={filteredModelsData} allModels={filteredAllModels} popularModels={filteredPopularModels} enabledModels={enabledModels} />
           </div>
         </div>
       </div>
@@ -561,10 +567,13 @@ export default function ChatInterface() {
 
           <div className="flex gap-2 sm:gap-3 items-end w-full">
             <div className="flex-1 relative min-w-0">
-              <Input ref={inputRef} value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyPress={handleKeyPress} onKeyDown={handleKeyDown} placeholder="Type your message..." className="pr-12 min-h-[44px] sm:min-h-[50px] text-sm sm:text-base resize-none bg-background border-border w-full" disabled={isLoading} autoFocus />
-              <Button onClick={handleSendMessage} disabled={!inputValue.trim() || isLoading} size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 sm:h-8 sm:w-8 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
-                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
+              <Input ref={inputRef} value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyPress={handleKeyPress} onKeyDown={handleKeyDown} placeholder="Type your message..." className="pr-20 min-h-[44px] sm:min-h-[50px] text-sm sm:text-base resize-none bg-background border-border w-full" disabled={isLoading} autoFocus />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <VoiceMicrophone onTranscript={handleVoiceTranscript} isLoading={isLoading} />
+                <Button onClick={handleSendMessage} disabled={!inputValue.trim() || isLoading} size="icon" className="h-7 w-7 sm:h-8 sm:w-8 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
+                  <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
           </div>
           
