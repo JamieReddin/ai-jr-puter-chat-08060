@@ -66,7 +66,7 @@ export function TokenUsageBar({
             <Button variant="ghost" size="sm" className="h-4 px-2 text-xs hover:bg-accent flex-1 sm:flex-initial text-center">
               <div className="flex items-center gap-1 sm:gap-2 overflow-hidden">
                 <Progress value={puterUsagePercentage} className="w-16 sm:w-16 h-2 flex-shrink-0" />
-                <span className="truncate text-xs">{formatNumber(puterTokensRemaining)} left</span>
+                <span className="truncate text-xs text-center">{formatNumber(puterTokensRemaining)} left</span>
                 <Zap className="h-3 w-3 flex-shrink-0" />
               </div>
             </Button>
