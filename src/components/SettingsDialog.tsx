@@ -358,7 +358,7 @@ export function SettingsDialog({
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex-auto ">
                       <span className="text-muted-foreground">Created by:</span>
-                      <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline gap-1.5 ">
                         Jamie Reddin
                       </a>
                     </div>
