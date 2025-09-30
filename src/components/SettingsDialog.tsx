@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Plus, User, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ALL_MODEL_VALUES } from '@/data/models';
 interface Model {
   value: string;
   label: string;
@@ -58,6 +60,19 @@ export function SettingsDialog({
   const [maxPuterTokens, setMaxPuterTokens] = useState(() => {
     return parseInt(localStorage.getItem('maxPuterTokens') || '50000000');
   });
+  const [showAddModel, setShowAddModel] = useState(false);
+  const [newModelId, setNewModelId] = useState('');
+  const [newModelProvider, setNewModelProvider] = useState('');
+  const [customModels, setCustomModels] = useState<Model[]>(() => {
+    const saved = localStorage.getItem('customModels');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem('userName') || '';
+  });
+  const [userAvatar, setUserAvatar] = useState(() => {
+    return localStorage.getItem('userAvatar') || '';
+  });
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -71,8 +86,71 @@ export function SettingsDialog({
     document.documentElement.style.fontSize = `${textSize}%`;
     localStorage.setItem('textSize', textSize.toString());
   }, [textSize]);
+
+  useEffect(() => {
+    localStorage.setItem('userName', userName);
+  }, [userName]);
+
+  useEffect(() => {
+    localStorage.setItem('userAvatar', userAvatar);
+  }, [userAvatar]);
+
   const handleSaveAppSettings = () => {
     localStorage.setItem('maxPuterTokens', maxPuterTokens.toString());
+  };
+
+  const handleAddModel = () => {
+    if (newModelId.trim() && newModelProvider.trim()) {
+      const newModel: Model = {
+        value: newModelId.trim(),
+        label: newModelId.trim(),
+        provider: newModelProvider.trim(),
+        category: 'Custom',
+        description: 'Custom user-added model'
+      };
+      
+      const updatedCustomModels = [...customModels, newModel];
+      setCustomModels(updatedCustomModels);
+      localStorage.setItem('customModels', JSON.stringify(updatedCustomModels));
+      
+      // Add to enabled models
+      onEnabledModelsChange([...enabledModels, newModel.value]);
+      
+      setNewModelId('');
+      setNewModelProvider('');
+      setShowAddModel(false);
+    }
+  };
+
+  const getAllModelsWithCustom = () => {
+    const baseModels = ALL_MODEL_VALUES.map(value => ({
+      value,
+      label: value,
+      provider: value.includes('/') ? value.split('/')[0] : 'Unknown',
+      category: 'Standard'
+    }));
+    
+    return [...baseModels, ...customModels];
+  };
+
+  const getModelsDataWithCustom = () => {
+    const allModelsWithCustom = getAllModelsWithCustom();
+    const grouped: ModelsData = {};
+    
+    allModelsWithCustom.forEach(model => {
+      const provider = model.provider || 'Unknown';
+      const category = model.category || 'Standard';
+      
+      if (!grouped[provider]) {
+        grouped[provider] = {};
+      }
+      if (!grouped[provider][category]) {
+        grouped[provider][category] = [];
+      }
+      grouped[provider][category].push(model);
+    });
+    
+    return grouped;
   };
   const toggleProvider = (provider: string) => {
     const newOpenProviders = new Set(openProviders);
@@ -91,18 +169,24 @@ export function SettingsDialog({
     }
   };
   const selectAllForProvider = (provider: string) => {
-    const providerModels = Object.values(modelsData[provider] || {}).flat().map(m => m.value);
+    const modelsDataWithCustom = getModelsDataWithCustom();
+    const providerModels = Object.values(modelsDataWithCustom[provider] || {}).flat().map(m => m.value);
     const newEnabled = [...new Set([...enabledModels, ...providerModels])];
     onEnabledModelsChange(newEnabled);
   };
+  
   const deselectAllForProvider = (provider: string) => {
-    const providerModels = Object.values(modelsData[provider] || {}).flat().map(m => m.value);
+    const modelsDataWithCustom = getModelsDataWithCustom();
+    const providerModels = Object.values(modelsDataWithCustom[provider] || {}).flat().map(m => m.value);
     const newEnabled = enabledModels.filter(m => !providerModels.includes(m));
     onEnabledModelsChange(newEnabled);
   };
+  
   const selectAllModels = () => {
-    onEnabledModelsChange(allModelValues);
+    const allModelsWithCustom = getAllModelsWithCustom();
+    onEnabledModelsChange(allModelsWithCustom.map(m => m.value));
   };
+  
   const deselectAllModels = () => {
     onEnabledModelsChange([]);
   };
@@ -157,11 +241,15 @@ export function SettingsDialog({
                 <Button variant="outline" size="sm" onClick={deselectAllModels}>
                   Deselect All
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => setShowAddModel(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Model
+                </Button>
               </div>
 
               <ScrollArea className="h-[50vh]">
                 <div className="space-y-4">
-                  {Object.entries(modelsData).map(([provider, categories]) => <Collapsible key={provider} open={openProviders.has(provider)} onOpenChange={() => toggleProvider(provider)}>
+                  {Object.entries(getModelsDataWithCustom()).map(([provider, categories]) => <Collapsible key={provider} open={openProviders.has(provider)} onOpenChange={() => toggleProvider(provider)}>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between p-3 h-auto font-semibold border border-border">
                           <div className="flex items-center gap-3">
@@ -253,27 +341,130 @@ export function SettingsDialog({
           </TabsContent>
 
           <TabsContent value="about" className="px-6 pb-6 mt-4">
-            <div className="space-y-4 text-center ">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Created by</p>
-                <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                  Jamie Reddin
-                </a>
-              </div>
-              
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Powered by</p>
-                <a href="https://puter.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                  Puter.com
-                </a>
-              </div>
+            <ScrollArea className="h-[50vh]">
+              <div className="space-y-6">
+                {/* User Profile Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    User Profile
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={userAvatar} alt={userName || "User"} />
+                      <AvatarFallback>{userName ? userName.charAt(0).toUpperCase() : "U"}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <Label htmlFor="user-name">Name</Label>
+                        <Input
+                          id="user-name"
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          placeholder="Enter your name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="user-avatar">Avatar URL</Label>
+                        <Input
+                          id="user-avatar"
+                          value={userAvatar}
+                          onChange={(e) => setUserAvatar(e.target.value)}
+                          placeholder="Enter avatar image URL"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="pt-4 border-t border-border">
-                <Badge variant="secondary">Version 1.0.0</Badge>
+                {/* App Details */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">App Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Created by:</span>
+                      <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Jamie Reddin
+                      </a>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Powered by:</span>
+                      <a href="https://puter.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Puter.com
+                      </a>
+                    </div>
+                  </div>
+                  <div className="text-center pt-2">
+                    <Badge variant="secondary">Version 1.2.0</Badge>
+                  </div>
+                </div>
+
+                {/* Tips & Features */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5" />
+                    Tips & Features
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-1">🚀 Quick Model Selection</h4>
+                      <p className="text-muted-foreground">Use the model selector to quickly switch between different AI models for varied responses.</p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-1">🎨 Customization</h4>
+                      <p className="text-muted-foreground">Adjust text size, toggle dark mode, and add custom models to personalize your experience.</p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-1">💾 Data Management</h4>
+                      <p className="text-muted-foreground">Export your chat history or clear it when needed. All settings are saved locally.</p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-1">⚡ Performance</h4>
+                      <p className="text-muted-foreground">Configure token limits and manage enabled models to optimize performance.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      {/* Add Model Dialog */}
+      <Dialog open={showAddModel} onOpenChange={setShowAddModel}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Custom Model</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="model-id">Model ID</Label>
+              <Input
+                id="model-id"
+                value={newModelId}
+                onChange={(e) => setNewModelId(e.target.value)}
+                placeholder="e.g., gpt-4-custom"
+              />
+            </div>
+            <div>
+              <Label htmlFor="model-provider">Provider</Label>
+              <Input
+                id="model-provider"
+                value={newModelProvider}
+                onChange={(e) => setNewModelProvider(e.target.value)}
+                placeholder="e.g., OpenAI"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddModel(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddModel} disabled={!newModelId.trim() || !newModelProvider.trim()}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>;
 }
