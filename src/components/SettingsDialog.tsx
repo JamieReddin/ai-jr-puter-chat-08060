@@ -357,13 +357,13 @@ export function SettingsDialog({
                   <h3 className="text-lg font-semibold">App Details</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex-auto ">
-                      <span className="text-muted-foreground">Created by:</span>
+                      <span className="text-muted-foreground gap-1.5 ">Created by:</span>
                       <a href="https://jayreddin.github.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline gap-1.5 ">
                         Jamie Reddin
                       </a>
                     </div>
                     <div className="flex-auto ">
-                      <span className="text-muted-foreground">Powered by:</span>
+                      <span className="text-muted-foreground gap-1.5 ">Powered by:</span>
                       <a href="https://puter.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         Puter.com
                       </a>
