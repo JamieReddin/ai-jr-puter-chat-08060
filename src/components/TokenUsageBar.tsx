@@ -60,7 +60,7 @@ export function TokenUsageBar({
       </div>
 
       <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
-        <span className="whitespace-nowrap">Puter:</span>
+        <span className="whitespace-nowrap text-justify">Puter:</span>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm" className="h-4 px-2 text-xs hover:bg-accent flex-1 sm:flex-initial text-justify">
